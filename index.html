@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Кромка Стеллаж Назорати (Edge Banding Rack Manager)</title>
+
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#131a26">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Кромка">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+
+    <!-- Lucide Icons (loyiha ichida, internet talab qilmaydi) -->
+    <script src="lucide-mini.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar or Sidebar Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <button id="btn-back" class="btn-icon hidden" title="Orqaga">
+                    <i data-lucide="arrow-left"></i>
+                    <span>Orqaga</span>
+                </button>
+                <div class="brand">
+                    <i data-lucide="layers" class="brand-icon"></i>
+                    <h1 id="app-title">Стеллажлар Назорати</h1>
+                </div>
+            </div>
+            <div class="header-right">
+                <!-- Search bar (visible in Rack view) -->
+                <div id="search-container" class="search-container hidden">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="input-search" placeholder="Кромка номи ёки ўлчами...">
+                    <button id="btn-clear-search" class="btn-icon-small hidden" title="Tozalash">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                <!-- Action buttons -->
+                <button id="btn-show-history" class="btn-secondary" title="Амаллар тарихи">
+                    <i data-lucide="history"></i>
+                    <span>Тарих</span>
+                </button>
+                <button id="btn-backup-menu" class="btn-secondary" title="Маълумотларни бошқариш">
+                    <i data-lucide="database"></i>
+                    <span>Резерв нусха</span>
+                </button>
+                <button id="btn-add-rack-header" class="btn-primary">
+                    <i data-lucide="plus"></i>
+                    <span>Янги стеллаж</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <!-- SCREEN 1: DASHBOARD / HOME -->
+            <section id="screen-dashboard" class="screen active">
+                <div class="welcome-banner">
+                    <div class="welcome-text">
+                        <h2>Хуш келибсиз!</h2>
+                        <p>Кромка стеллажларидаги қолдиқларни бошқариш тизими. Стеллажни танланг ёки янгисини яратинг.</p>
+                    </div>
+                </div>
+
+                <!-- Global Stats -->
+                <div class="dashboard-stats-grid">
+                    <div class="stat-card blue">
+                        <div class="stat-icon">
+                            <i data-lucide="box"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Жами ячейкалар</span>
+                            <span class="stat-value" id="global-stat-total">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card green">
+                        <div class="stat-icon">
+                            <i data-lucide="check-circle-2"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Тўлиқ ячейкалар</span>
+                            <span class="stat-value" id="global-stat-filled">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card orange">
+                        <div class="stat-icon">
+                            <i data-lucide="alert-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Кам қолди</span>
+                            <span class="stat-value" id="global-stat-low">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card gray">
+                        <div class="stat-icon">
+                            <i data-lucide="package-open"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Бўш ячейкалар</span>
+                            <span class="stat-value" id="global-stat-empty">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Racks List Section -->
+                <div class="section-container">
+                    <div class="section-header">
+                        <h3><i data-lucide="layout-grid"></i> Сизнинг стеллажларингиз</h3>
+                    </div>
+                    <div class="racks-grid" id="racks-list">
+                        <!-- Racks dynamically inserted here -->
+                        <div class="rack-card-empty" id="btn-add-rack-card">
+                            <i data-lucide="plus-circle"></i>
+                            <h4>Янги стеллаж қўшиш</h4>
+                            <p>Қатор ва устунлар сонини созлаш</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SCREEN 2: RACK DETAIL VIEW -->
+            <section id="screen-rack-detail" class="screen">
+                <!-- Stat Cards (matches screenshot) -->
+                <div class="rack-stats-grid">
+                    <div class="stat-card blue">
+                        <div class="stat-icon">
+                            <i data-lucide="box"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Жами</span>
+                            <span class="stat-value" id="rack-stat-total">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card green">
+                        <div class="stat-icon">
+                            <i data-lucide="check-circle-2"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Тўлиқ</span>
+                            <span class="stat-value" id="rack-stat-filled">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card orange">
+                        <div class="stat-icon">
+                            <i data-lucide="alert-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Кам қолди</span>
+                            <span class="stat-value" id="rack-stat-low">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card gray">
+                        <div class="stat-icon">
+                            <i data-lucide="package-open"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Бўш</span>
+                            <span class="stat-value" id="rack-stat-empty">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend (matches screenshot) -->
+                <div class="legend-bar">
+                    <div class="legend-item">
+                        <span class="legend-color green"></span>
+                        <span class="legend-text">Етарли</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color orange"></span>
+                        <span class="legend-text">Кам қолди</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color dashed-empty"></span>
+                        <span class="legend-text">Бўш</span>
+                    </div>
+                </div>
+
+                <!-- Grid Visualizer (scrollable wrapper) -->
+                <div class="grid-wrapper">
+                    <div class="grid-scroll-container">
+                        <div class="rack-grid-table" id="rack-grid">
+                            <!-- Dynamically generated rows and columns -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rack Settings Button (Delete Rack, Edit Dimensions) -->
+                <div class="rack-actions-footer">
+                    <button id="btn-edit-rack" class="btn-secondary-danger">
+                        <i data-lucide="settings"></i>
+                        <span>Стеллажни созлаш</span>
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL 1: ADD / EDIT CELL -->
+    <div id="modal-cell" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="cell-modal-title">Ячейка: A-1</h3>
+                <button class="modal-close btn-close-modal"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-cell-data">
+                    <div class="form-group">
+                        <label for="cell-input-name">Кромка номи / ранги <span class="required">*</span></label>
+                        <input type="text" id="cell-input-name" placeholder="Масалан: Белый Премиум, Дуб Сорано" required list="suggested-names">
+                        <datalist id="suggested-names">
+                            <option value="Белый Премиум">
+                            <option value="Белый Апельсин">
+                            <option value="Дуб сорано">
+                            <option value="Оникс серый">
+                            <option value="Венге">
+                            <option value="Антрацит">
+                        </datalist>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cell-input-size">Ўлчами <span class="required">*</span></label>
+                            <input type="text" id="cell-input-size" placeholder="Масалан: 19*0.8, 22*2, 35*0.8" required list="suggested-sizes">
+                            <datalist id="suggested-sizes">
+                                <option value="19*0.4">
+                                <option value="19*0.8">
+                                <option value="19*2.0">
+                                <option value="22*0.8">
+                                <option value="22*2.0">
+                                <option value="35*0.8">
+                                <option value="35*2.0">
+                                <option value="42*2.0">
+                            </datalist>
+                        </div>
+                        <div class="form-group">
+                            <label for="cell-input-code">Артикул / Код</label>
+                            <input type="text" id="cell-input-code" placeholder="Масалан: 1024-A">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cell-input-qty">Қолдиқ миқдори <span class="required">*</span></label>
+                            <div class="qty-input-wrapper">
+                                <input type="number" id="cell-input-qty" value="5" min="0" step="any" required>
+                                <span class="qty-unit-label" id="qty-unit-display">Рулон</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cell-input-min">Минимал қолдиқ (огоҳлантириш)</label>
+                            <div class="qty-input-wrapper">
+                                <input type="number" id="cell-input-min" value="1" min="0" step="any">
+                                <span class="qty-unit-label">Рулон</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Measurement details (optional) -->
+                    <div class="form-group">
+                        <label>Ўлчов бирлиги</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="cell-unit" value="Рулон" checked>
+                                <span>Рулон</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="cell-unit" value="Метр">
+                                <span>Метр</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Quick Inventory adjustments (shown only for editing) -->
+                    <div id="quick-adjustment-section" class="form-group hidden">
+                        <label>Тезкор ўзгартириш</label>
+                        <div class="quick-adjustments">
+                            <button type="button" class="btn-adjust negative" data-val="-1">-1</button>
+                            <button type="button" class="btn-adjust negative" data-val="-5">-5</button>
+                            <button type="button" class="btn-adjust positive" data-val="1">+1</button>
+                            <button type="button" class="btn-adjust positive" data-val="5">+5</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cell-input-notes">Изоҳ</label>
+                        <textarea id="cell-input-notes" rows="2" placeholder="Қўшимча маълумотлар..."></textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" id="btn-delete-cell-content" class="btn-danger hidden">
+                            <i data-lucide="trash-2"></i> Тозалаш (Бўшатиш)
+                        </button>
+                        <button type="button" class="btn-secondary btn-close-modal">Бекор қилиш</button>
+                        <button type="submit" class="btn-primary">
+                            <i data-lucide="save"></i> Сақлаш
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ADD / EDIT RACK -->
+    <div id="modal-rack" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="rack-modal-title">Янги Стеллаж Яратиш</h3>
+                <button class="modal-close btn-close-modal"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-rack-data">
+                    <div class="form-group">
+                        <label for="rack-input-name">Стеллаж номи <span class="required">*</span></label>
+                        <input type="text" id="rack-input-name" placeholder="Масалан: А - стеллаж, Б - стеллаж" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="rack-input-rows">Қаторлар сони (A, B, C...) <span class="required">*</span></label>
+                            <select id="rack-input-rows" required>
+                                <option value="3">3 та (A - C)</option>
+                                <option value="4">4 та (A - D)</option>
+                                <option value="5" selected>5 та (A - E)</option>
+                                <option value="6">6 та (A - F)</option>
+                                <option value="8">8 та (A - H)</option>
+                                <option value="10">10 та (A - J)</option>
+                                <option value="12">12 та (A - L)</option>
+                                <option value="15">15 та (A - O)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="rack-input-cols">Устунлар сони (1, 2, 3...) <span class="required">*</span></label>
+                            <input type="number" id="rack-input-cols" min="1" max="100" value="6" required>
+                        </div>
+                    </div>
+
+                    <div id="delete-rack-warning" class="warning-box hidden">
+                        <i data-lucide="alert-triangle"></i>
+                        <p>Диққат! Стеллаж ўчирилганда, ундаги барча кромкалар маълумотлари ҳам ўчиб кетади.</p>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" id="btn-delete-rack-confirm" class="btn-danger hidden">
+                            <i data-lucide="trash-2"></i> Ўчириб ташлаш
+                        </button>
+                        <button type="button" class="btn-secondary btn-close-modal">Бекор қилиш</button>
+                        <button type="submit" class="btn-primary">Яратиш</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: TRANSACTION HISTORY -->
+    <div id="modal-history" class="modal-overlay">
+        <div class="modal-container large">
+            <div class="modal-header">
+                <h3><i data-lucide="history"></i> Амаллар тарихи</h3>
+                <button class="modal-close btn-close-modal"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="history-controls">
+                    <button id="btn-clear-history" class="btn-secondary-danger">
+                        <i data-lucide="trash-2"></i> Тарихни тозалаш
+                    </button>
+                </div>
+                <div class="history-table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Вақти</th>
+                                <th>Стеллаж/Ячейка</th>
+                                <th>Кромка</th>
+                                <th>Амал</th>
+                                <th>Ўзгариш</th>
+                                <th>Миқдор</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-log-body">
+                            <!-- History items dynamically inserted -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: BACKUP & RESTORE -->
+    <div id="modal-backup" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3><i data-lucide="database"></i> Резерв нусха (Backup)</h3>
+                <button class="modal-close btn-close-modal"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <p class="backup-info-text">
+                    Маълумотларни йўқотмаслик учун уларни файл сифатида сақлаб қўйишингиз ёки аввалги нусхани тиклашингиз мумкин.
+                </p>
+                <div class="backup-actions">
+                    <button id="btn-export-data" class="btn-primary btn-full-width">
+                        <i data-lucide="download"></i>
+                        <span>Нусха олиш (Faylga yuklash)</span>
+                    </button>
+                    
+                    <hr class="backup-divider">
+                    
+                    <div class="import-section">
+                        <label for="input-import-file" class="btn-secondary btn-full-width import-label">
+                            <i data-lucide="upload"></i>
+                            <span>Нусхани тиклаш (Fayl yuklash)</span>
+                        </label>
+                        <input type="file" id="input-import-file" accept=".json" class="hidden">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+
+    <!-- Service Worker: internetsiz ishlash uchun -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(function (reg) {
+                        console.log('[SW] Ro\'yxatdan o\'tdi:', reg.scope);
+                    })
+                    .catch(function (err) {
+                        console.warn('[SW] Ro\'yxatdan o\'tmadi:', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
